@@ -1,22 +1,25 @@
 #%%
-import fastf1
-
-
-from pathlib import Path
-ROOT_DIR = Path(__file__).resolve().parent.parent.parent
-DATA_DIR = ROOT_DIR / "data"
-
-
 import pandas as pd
 pd.set_option('display.max_columns',None)
-#%%
-session = fastf1.get_session(2021,7,"R")
-session.load()
 
-
+import fastf1
 
 #%%
-session.results
-session.results.to_parquet(DATA_DIR / "2021_07_R.Parquet")
-
-
+for i in range(1,50):
+    
+    print(f"Coletando GP {i}...")
+    
+    try:
+        session = fastf1.get_session(2021,i,'R')
+    except ValueError as err:
+        print(err)
+        break
+        
+        
+    session._load_drivers_results()
+    
+    session.results
+    session.results.to_parquet(f"../../data/2021_{i:02}_R.parquet")
+    
+    print(session.results)
+# %%
