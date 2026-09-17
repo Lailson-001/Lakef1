@@ -23,21 +23,27 @@ class CollectResults:
         try:
             session = fastf1.get_session(year, gp, mode)
 
-            # Carrega os resultados
             session._load_drivers_results()
 
             df = session.results.copy()
             df["Mode"] = mode
 
-            return df
-
-        except (ValueError, Exception) as err:
-            print(f"Erro em {year}, GP={gp}, mode={mode}: {err}")
+            df["Year"] = session.date.year
+            df["Date"] = session.date
+            df["Mode"] = session.name
+            df["RoundNumber"] = session.event["RoundNumber"]
+            df["OfficialEventName"] = session.event["OfficialEventName"]
+            df["EventName"] = session.event["EventName"]
+            df["Country"] = session.event["Country"]
+            df["Location"] = session.event["Location"]
+            return df    
+        except Exception as e:
+            print(f"Erro ao carregar dados de {gp} {year} ({mode}): {e}")
             return pd.DataFrame()
-
-    def save_data(self, df, year, gp, mode):
+    
+    def save_data(self, df:pd.DataFrame, year:int, gp:int, mode:str):
         path = self.data_dir / f"{year}_{gp:02}_{mode}.parquet"
-        df.to_parquet(path)
+        df.to_parquet(path, index=False)
         return path
 
     def process(self, year, gp, mode):
@@ -65,13 +71,21 @@ class CollectResults:
             self.process_year_modes(year)
             time.sleep(10)
 #%%
-if __name__ == "__main__":
 
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--years", "-y", nargs="+", type=int)
-    parser.add_argument("--modes", "-m", nargs="+")
-    args = parser.parse_args()
 
+parser = argparse.ArgumentParser()
+parser.add_argument("--start", type=int, default=0)
+parser.add_argument("--stop", type=int,  default=0)
+parser.add_argument("--years", "-y", nargs="+", type=int)
+parser.add_argument("--modes", "-m", nargs="+")
+args = parser.parse_args()
+
+if args.years:
     collect = CollectResults(args.years, args.modes)
 
-    collect.process_years()
+elif args.start and args.stop:
+    years = [i for i in range(args.start,args.stop+1)]
+    collect = CollectResults(years, args.modes)
+
+
+collect.process_years()
