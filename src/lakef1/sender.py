@@ -47,22 +47,19 @@ class Sender:
         for f in tqdm (files):
             self.process_file(os.path.join(folder,f)) 
     
-    
-    
-    
-    
+       
 # %%
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--bucket", type=str)
+    parser.add_argument("--bucket_path", default="f1/results", type=str)
+    parser.add_argument("--folder",default="data" ,type=str)
+    args = parser.parse_args()
 
-parser = argparse.ArgumentParser()
-parser.add_argument("--bucket", type=str)
-parser.add_argument("--bucket_path", type=str)
-parser.add_argument("--folder",default="data" ,type=str)
-args = parser.parse_args()
 
+    if args.bucket:
+        send = Sender(args.bucket, args.bucket_path)
+        send.process_folder(args.folder)
 
-if args.bucket:
-    send = Sender(args.bucket, args.bucket_path)
-    send.process_folder(args.folder)
-
-else:
-    print("sem bucket definido")
+    else:
+        print("sem bucket definido")
